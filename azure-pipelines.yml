@@ -1,64 +1,81 @@
+trigger:
+ - 'feature-ms-DiegoConos-mensaje'
+jobs:
+  - job: Job1
+    displayName: 'Job Cloud'
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Gradle@3
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'build jacocoTestReport jacocoTestCoverageVerification'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: false
+        spotBugsAnalysis: false
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'JaCoCo'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/build/reports/jacoco/test/jacocoTestReport.xml'
+        pathToSources: '$(System.DefaultWorkingDirectory)/src/main/java/'
+        reportDirectory: '$(System.DefaultWorkingDirectory)/build/reports/jacoco/test'
+        failIfCoverageEmpty: true
+      displayName: 'Cobertura Codigo'  
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: 'sonar pipeline'
+        organization: 'diegocean'
+        projectKey: 'Diegocean_microservicio-spring'
+        projectName: 'microservicio-spring'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    - task: Gradle@3
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'sonarqube'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: true
+        sqGradlePluginVersionChoice: 'specify'
+        sonarQubeGradlePluginVersion: '3.5.0.2730'
+        spotBugsAnalysis: false
 
-- task: Gradle@3
-  inputs:
-    gradleWrapperFile: 'gradlew'
-    tasks: 'build jacocoTestReport jacocoTestCoverageVerification'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST-*.xml'
-    javaHomeOption: 'JDKVersion'
-    sonarQubeRunAnalysis: false
-    spotBugsAnalysis: false
-- task: PublishCodeCoverageResults@1
-  inputs:
-     codeCoverageTool: 'JaCoCo'
-     summaryFileLocation: '$(System.DefaultWorkingDirectory)/build/reports/jacoco/test/jacocoTestReport.xml'
-     pathToSources: '$(System.DefaultWorkingDirectory)/src/main/java/'
-     reportDirectory: '$(System.DefaultWorkingDirectory)/build/reports/jacoco/test'
-     failIfCoverageEmpty: true
-  displayName: 'Cobertura Codigo'  
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'Docker'
+        repository: 'diegocean/microservicio-spring'
+        command: 'login'
 
-- task: SonarCloudPrepare@1
-  inputs:
-    SonarCloud: 'sonar pipeline'
-    organization: 'diegocean'
-    projectKey: 'Diegocean_microservicio-spring'
-    projectName: 'microservicio-spring'
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'Docker'
+        repository: 'diegocean/microservicio-spring'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+                  $(Build.BuildId)
+                  latest
 
-- task: Gradle@3
-  inputs:
-    gradleWrapperFile: 'gradlew'
-    tasks: 'sonarqube'
-    publishJUnitResults: false
-    javaHomeOption: 'JDKVersion'
-    sonarQubeRunAnalysis: true
-    sqGradlePluginVersionChoice: 'specify'
-    sonarQubeGradlePluginVersion: '3.5.0.2730'
-    spotBugsAnalysis: false
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'Docker'
+        repository: 'diegocean/microservicio-spring'
+        command: 'push'
+        tags: |
+                  $(Build.BuildId)
+                  latest
 
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker'
-    repository: 'diegocean/microservicio-spring'
-    command: 'login'
+  - job: Job2
+    dependsOn: Job1
+    displayName: 'Job local'
+    pool:
+       name: kubernetes
+    steps:
 
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker'
-    repository: 'diegocean/microservicio-spring'
-    command: 'build'
-    Dockerfile: '**/Dockerfile'
-
-- task: Docker@2
-  inputs:
-    containerRegistry: 'Docker'
-    repository: 'diegocean/microservicio-spring'
-    command: 'push'
+      - task: Kubernetes@1
+        inputs:
+          connectionType: 'None'
+          command: 'apply'
+          arguments: '--force -f deployment.yaml'
