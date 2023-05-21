@@ -22,7 +22,6 @@ steps:
   inputs:
     SonarCloud: 'sonar pipeline'
     organization: 'diegocean'
-    scannerMode: 'Other'
     projectKey: 'Diegocean_microservicio-spring'
     projectName: 'microservicio-spring'
 
@@ -34,5 +33,5 @@ steps:
     javaHomeOption: 'JDKVersion'
     sonarQubeRunAnalysis: true
     sqGradlePluginVersionChoice: 'specify'
-    sonarQubeGradlePluginVersion: '2.6.1'
+    sonarQubeGradlePluginVersion: '3.5.0.2730'
     spotBugsAnalysis: false
