@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: lab-app
-          image: diegocean/microservicio-spring-v4:latest
+          image: diegocean/microservicio-spring:latest
           ports:
             - containerPort: 8080
 ---
