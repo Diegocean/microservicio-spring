@@ -47,18 +47,18 @@ steps:
 - task: Docker@2
   inputs:
     containerRegistry: 'Docker'
-    repository: 'aibarra17/microservicio-spring'
+    repository: 'diegocean/microservicio-spring'
     command: 'login'
 
 - task: Docker@2
   inputs:
     containerRegistry: 'Docker'
-    repository: 'aibarra17/microservicio-spring'
+    repository: 'diegocean/microservicio-spring'
     command: 'build'
     Dockerfile: '**/Dockerfile'
 
 - task: Docker@2
   inputs:
     containerRegistry: 'Docker'
-    repository: 'aibarra17/microservicio-spring'
+    repository: 'diegocean/microservicio-spring'
     command: 'push'
