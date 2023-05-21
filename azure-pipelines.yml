@@ -18,6 +18,14 @@ steps:
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
 
+- task: SonarCloudPrepare@1
+  inputs:
+    SonarCloud: 'sonar pipeline'
+    organization: 'diegocean'
+    scannerMode: 'Other'
+    projectKey: 'Diegocean_microservicio-spring'
+    projectName: 'microservicio-spring'
+
 - task: Gradle@3
   inputs:
     gradleWrapperFile: 'gradlew'
