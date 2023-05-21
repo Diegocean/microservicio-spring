@@ -74,8 +74,14 @@ jobs:
        name: kubernetes
     steps:
 
-      - task: Kubernetes@1
-        inputs:
-          connectionType: 'None'
-          command: 'apply'
-          arguments: '--force -f deployment.yaml'
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'None'
+        command: 'apply'
+        arguments: '--force -f deploy.yaml'
+
+    - task: PowerShell@2
+      inputs:
+       targetType: 'inline'
+       script: 'Start-Job -ScriptBlock {kubectl port-forward deployment/lab-deployment 8080:8080};'
+      displayName: 'Port forward'
