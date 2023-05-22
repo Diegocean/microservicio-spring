@@ -30,6 +30,8 @@ jobs:
         organization: 'diegocean'
         projectKey: 'Diegocean_microservicio-spring'
         projectName: 'microservicio-spring'
+        extraProperties: |
+          sonar.qualitygate.wait=true
 
     - task: Gradle@3
       inputs:
